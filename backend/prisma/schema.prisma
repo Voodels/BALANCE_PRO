@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      Role
+  reports   Report[] @relation("UserReports")
+}
+
+model Report {
+  id              String          @id @default(uuid())
+  date            DateTime        @default(now())
+  userId          String
+  user            User            @relation("UserReports", fields: [userId], references: [id])
+  testParameters  TestParameters[]
+  testResults     TestResults[]
+}
+
+model TestParameters {
+  id              String     @id @default(uuid())
+  srNo            Int
+  rotorNo         String
+  a               Float
+  b               Float
+  c               Float
+  leftRadius      Float
+  rightRadius     Float
+  leftTolerance   Float
+  rightTolerance  Float
+  unitRPM         Int
+  correctionMode  String
+  reportId        String
+  report          Report       @relation(fields: [reportId], references: [id])
+}
+
+model TestResults {
+  id           String   @id @default(uuid())
+  srNo         Int
+  rightResults String
+  leftMass     Float
+  leftAngle    Float
+  rightAngle   Float
+  leftResults  String
+  rightMass    Float
+  reportId     String
+  report       Report   @relation(fields: [reportId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
